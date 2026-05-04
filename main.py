@@ -1,11 +1,12 @@
-"""Pong — Stage 5: add the ball (moves with constant velocity).
+"""Pong — Stage 6: ball bounces off the top and bottom walls.
 
 Run with:  uv run main.py
 
 Player 1 (left):  W / S
 Player 2 (right): ↑ / ↓
 
-The ball will fly off-screen — that's expected. Wall bouncing comes in stage 6.
+The ball still flies off the LEFT and RIGHT — those are scoring zones we'll
+handle in stage 8. Only top/bottom are walls.
 """
 import sys
 
@@ -107,6 +108,19 @@ def main():
         # every frame — is the foundation of all motion in games.
         ball.x += ball_vx
         ball.y += ball_vy
+
+        # Bounce off the top and bottom walls. The trick: when the ball
+        # crosses an edge, flip the y-velocity so it heads the other way,
+        # AND clamp the position back inside the wall. Without the clamp,
+        # at high speeds the ball can land *past* the wall and the next
+        # frame it'll still be past the wall — sign flips again — and it
+        # gets stuck vibrating on the edge.
+        if ball.top <= 0:
+            ball.top = 0
+            ball_vy = -ball_vy
+        elif ball.bottom >= WINDOW_HEIGHT:
+            ball.bottom = WINDOW_HEIGHT
+            ball_vy = -ball_vy
 
         # 3) Draw the frame.
         screen.fill(BACKGROUND_COLOR)
