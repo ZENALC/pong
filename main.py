@@ -1,9 +1,11 @@
-"""Pong — Stage 4: add the right paddle (2-player, ↑/↓ arrows).
+"""Pong — Stage 5: add the ball (moves with constant velocity).
 
 Run with:  uv run main.py
 
 Player 1 (left):  W / S
 Player 2 (right): ↑ / ↓
+
+The ball will fly off-screen — that's expected. Wall bouncing comes in stage 6.
 """
 import sys
 
@@ -21,6 +23,16 @@ PADDLE_HEIGHT = 100
 PADDLE_COLOR = (255, 255, 255)
 PADDLE_MARGIN = 30
 PADDLE_SPEED = 6
+
+# --- Ball ---
+# A square Rect — easy to draw and easy to do collision with later.
+BALL_SIZE = 14
+BALL_COLOR = (255, 255, 255)
+
+# Velocity (pixels per frame). Positive vx → moving right, positive vy → down.
+# Starting both positive sends the ball toward the bottom-right.
+BALL_INITIAL_VX = 5
+BALL_INITIAL_VY = 4
 
 
 def clamp_paddle(paddle: pygame.Rect) -> None:
@@ -53,6 +65,19 @@ def main():
         PADDLE_HEIGHT,
     )
 
+    # Spawn the ball at the exact center of the window. We pass the top-left
+    # corner to Rect, so we subtract half the ball's size to center it.
+    ball = pygame.Rect(
+        WINDOW_WIDTH // 2 - BALL_SIZE // 2,
+        WINDOW_HEIGHT // 2 - BALL_SIZE // 2,
+        BALL_SIZE,
+        BALL_SIZE,
+    )
+    # Velocity lives outside the Rect because Rect only stores position/size,
+    # not motion. We track (vx, vy) as plain ints and update the rect each frame.
+    ball_vx = BALL_INITIAL_VX
+    ball_vy = BALL_INITIAL_VY
+
     running = True
     while running:
         # 1) Handle events.
@@ -78,11 +103,16 @@ def main():
         clamp_paddle(left_paddle)
         clamp_paddle(right_paddle)
 
+        # Move the ball. The position+velocity update pattern — `pos += vel`
+        # every frame — is the foundation of all motion in games.
+        ball.x += ball_vx
+        ball.y += ball_vy
+
         # 3) Draw the frame.
         screen.fill(BACKGROUND_COLOR)
         pygame.draw.rect(screen, PADDLE_COLOR, left_paddle)
         pygame.draw.rect(screen, PADDLE_COLOR, right_paddle)
-        # TODO(stage 5): draw the ball here.
+        pygame.draw.rect(screen, BALL_COLOR, ball)
         pygame.display.flip()
 
         # 4) Cap the frame rate.
